@@ -5,4 +5,3 @@ Requirement list:
                  import sklearn
                  import sentence_transformers
                  import numpy
-                 import itertools
