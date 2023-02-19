@@ -3,37 +3,36 @@
 import jieba
 import jieba.analyse
 import os, re
-
+from sklearn.feature_extraction.text import CountVectorizer
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
+import itertools
 
 def stopwordslist(filepath):  # 定义函数创建停用词列表
     stopword = [line.strip() for line in open(filepath, 'r').readlines()]  # 以行的形式读取停用词表，同时转换为列表
     return stopword
 
-
-filepath = '/Users/13121510983163.com/Desktop/KOL/Product-Categorization-NLP-master/coding/baidu_stopwords.txt'
+filepath = '../baidu_stopwords.txt'
 stopwordslist(filepath)  # 调用函数
 
-filepath = '/Users/13121510983163.com/Desktop/KOL/Product-Categorization-NLP-master/coding/eyecream3.txt'
+filepath = '../eyecream3.txt'
 with open(filepath) as file_pi:
     contents = file_pi.read()
-print('\n【原文本：】' + '\n' + contents)
 
 content1 = contents.replace(' ', '')  # 去掉文本中的空格
-print('\n【去除空格后的文本：】' + '\n' + content1)
 
 pattern = re.compile("[^\u4e00-\u9fa5]")  # 只保留中文
 content2 = re.sub(pattern, '', content1)  # 把文本中匹配到的字符替换成空字符
-print('\n【去除符号后的文本：】' + '\n' + content2)
 
 jieba.suggest_freq(('進口貨'), tune=True)
 jieba.suggest_freq(('水貨'), tune=True)
 cutwords = jieba.lcut(content2)  # 精确模式分词
-print('\n【精确模式分词后:】' + '\n' + "/".join(cutwords))
 
 jieba.suggest_freq(('進口貨'), tune=True)
 jieba.suggest_freq(('水貨'), tune=True)
 cutwords = jieba.lcut(content2)  # 精确模式分词
-print('\n【精确模式分词后:】' + '\n' + "/".join(cutwords))
+
 stopwords = stopwordslist(filepath)  # 这里加载停用词的路径
 words = ''
 for word in cutwords:  # for循环遍历分词后的每个词语
@@ -41,9 +40,6 @@ for word in cutwords:  # for循环遍历分词后的每个词语
         if word != '\t':
             words += word
             words += "/"
-print('\n【去除停用词后的分词：】' + '\n' + words + '\n')
-
-from sklearn.feature_extraction.text import CountVectorizer
 
 n_gram_range = (1, 1)
 
@@ -51,22 +47,13 @@ n_gram_range = (1, 1)
 count = CountVectorizer(ngram_range=n_gram_range, stop_words=stopwords).fit([words])
 candidates = count.get_feature_names_out()
 
-from sentence_transformers import SentenceTransformer
-
 model = SentenceTransformer('distiluse-base-multilingual-cased-v1')
 doc_embedding = model.encode([words])
 candidate_embeddings = model.encode(candidates)
 
-from sklearn.metrics.pairwise import cosine_similarity
-
 top_n = 10
 distances = cosine_similarity(doc_embedding, candidate_embeddings)
-keywords = [candidates[index] for index in distances.argsort()[0][-top_n:]]
-print(keywords)
-
-import numpy as np
-import itertools
-
+keywords1 = [candidates[index] for index in distances.argsort()[0][-top_n:]]
 
 def max_sum_sim(doc_embedding, word_embeddings, words, top_n, nr_candidates):
     # Calculate distances and extract keywords
@@ -91,9 +78,7 @@ def max_sum_sim(doc_embedding, word_embeddings, words, top_n, nr_candidates):
     return [words_vals[idx] for idx in candidate]
 
 
-print(max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=10, nr_candidates=10))
-
-import numpy as np
+keywords2 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=10, nr_candidates=10)
 
 
 def mmr(doc_embedding, word_embeddings, words, top_n, diversity):
@@ -122,4 +107,7 @@ def mmr(doc_embedding, word_embeddings, words, top_n, diversity):
     return [words[idx] for idx in keywords_idx]
 
 
-print(mmr(doc_embedding, candidate_embeddings, candidates, top_n=10, diversity=0.3))
+keywords3 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=10, diversity=0.3)
+
+d1 = 'Output1: {keywords1}\nOutput2: {keywords2}\nOutput3: {keywords3}'.format(keywords1=keywords1, keywords2=keywords2, keywords3=keywords3)
+print(d1)
