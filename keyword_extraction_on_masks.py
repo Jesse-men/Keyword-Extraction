@@ -48,7 +48,7 @@ candidate_embeddings = model.encode(candidates)
 
 top_n = 10
 distances = cosine_similarity(doc_embedding, candidate_embeddings)
-keywords1 = [candidates[index] for index in distances.argsort()[0][-top_n:]]
+keywords_1 = [candidates[index] for index in distances.argsort()[0][-top_n:]]
 
 
 def max_sum_sim(doc_embedding, word_embeddings, words, top_n, nr_candidates):
@@ -74,7 +74,7 @@ def max_sum_sim(doc_embedding, word_embeddings, words, top_n, nr_candidates):
     return [words_vals[idx] for idx in candidate]
 
 
-keywords2 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=10, nr_candidates=10)
+keywords_2 = max_sum_sim(doc_embedding, candidate_embeddings, candidates, top_n=10, nr_candidates=10)
 
 
 def mmr(doc_embedding, word_embeddings, words, top_n, diversity):
@@ -104,7 +104,7 @@ def mmr(doc_embedding, word_embeddings, words, top_n, diversity):
     return [words[idx] for idx in keywords_idx]
 
 
-keywords3 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=10, diversity=0.3)
+keywords_3 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=10, diversity=0.3)
 
-d2 = 'Output1: {keywords1}\nOutput2: {keywords2}\nOutput3: {keywords3}'.format(keywords1=keywords1, keywords2=keywords2, keywords3=keywords3)
+d2 = {'Output1': keywords_1, 'Output2': keywords_2, 'Output3': keywords_3}
 print(d2)
