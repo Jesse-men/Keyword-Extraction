@@ -109,5 +109,5 @@ def mmr(doc_embedding, word_embeddings, words, top_n, diversity):
 
 keywords3 = mmr(doc_embedding, candidate_embeddings, candidates, top_n=10, diversity=0.3)
 
-d1 = {'Output1': keywords1, 'Output2': keywords2, 'Output3': keywords3}
+d1 = {'Output': keywords3}
 print(d1)
